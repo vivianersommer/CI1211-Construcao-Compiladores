@@ -18,39 +18,35 @@ int num_vars;
 %token VIRGULA PONTO_E_VIRGULA DOIS_PONTOS PONTO
 %token T_BEGIN T_END VAR IDENT ATRIBUICAO
 
+%token T_LABEL T_TYPE T_IF NUMERO
+%token T_ARRAY T_PROCEDURE T_FUNCTION T_GOTO MENOR
+%token T_THEN T_ELSE T_WHILE T_DO T_OR T_DIVISAO_INT
+%token T_AND T_NOT READ WRITE INTEGER BOOLEAN TRUE FALSE
+%token OF REPEAT UNTIL MAIS MENOS MULTIPLICACAO MAIOR
+%token MENOR_OU_IGUAL MAIOR_OU_IGUAL DIFERENTE IGUAL
+%token T_DIVISAO_real ABRE_COLCHETES FECHA_COLCHETES
+
 %%
 
-programa    :{
-             geraCodigo (NULL, "INPP");
-             }
-             PROGRAM IDENT
-             ABRE_PARENTESES lista_idents FECHA_PARENTESES PONTO_E_VIRGULA
-             bloco PONTO {
-             geraCodigo (NULL, "PARA");
-             }
+programa    :{ geraCodigo (NULL, "INPP");}
+            PROGRAM IDENT
+            ABRE_PARENTESES lista_idents FECHA_PARENTESES PONTO_E_VIRGULA
+            bloco PONTO { geraCodigo (NULL, "PARA");}
 ;
 
-bloco       :
-              parte_declara_vars
-              {
-              }
-
-              comando_composto
-              ;
-
-
-
+bloco       :parte_declara_vars{}
+            comando_composto
+;
 
 parte_declara_vars:  var
 ;
-
 
 var         : { } VAR declara_vars
             |
 ;
 
-declara_vars: declara_vars declara_var
-            | declara_var
+declara_vars: declara_vars { num_vars=0; } declara_var
+            | { num_vars=0; }declara_var
 ;
 
 declara_var : { }
@@ -61,7 +57,7 @@ declara_var : { }
               PONTO_E_VIRGULA
 ;
 
-tipo        : IDENT
+tipo        : INTEGER
 ;
 
 lista_id_var: lista_id_var VIRGULA IDENT

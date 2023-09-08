@@ -1,17 +1,3 @@
-
-/* -------------------------------------------------------------------
- *            Arquivo: compilador.l
- * -------------------------------------------------------------------
- *              Autor: Bruno Muller Junior
- *               Data: 08/2007
- *      Atualizado em: [09/08/2020, 19h:01m]
- *
- * -------------------------------------------------------------------
- *
- * Tipos, protótipos e variáveis globais do compilador (via extern)
- *
- * ------------------------------------------------------------------- */
-
 %{
 
 
@@ -321,7 +307,7 @@ until { simbolo = simb_ate;
           return ABRE_COLCHETES;
 }
 
-\] { simbolo = simb_fecha_colchetes;
+\]   { simbolo = simb_fecha_colchetes;
           strncpy(token, yytext, TAM_TOKEN);
           IMPRIME(" fecha_colchetes ");
           return FECHA_COLCHETES;
@@ -334,10 +320,10 @@ until { simbolo = simb_ate;
 }
 
 {ident} { simbolo = simb_identificador;
-          strncpy (token, yytext, TAM_TOKEN);
-          IMPRIME(" ident  ");
-          return IDENT;
-        }
+  strncpy (token, yytext, TAM_TOKEN);
+  IMPRIME(" ident  ");
+  return IDENT;
+}
 
 
 %%
