@@ -1,16 +1,17 @@
-
-// Testar se funciona corretamente o empilhamento de par�metros
-// passados por valor ou por refer�ncia.
-
-
 %{
 #include <stdio.h>
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
 #include "compilador.h"
+#include "tabelaSimbolos.h"
 
-int num_vars;
+
+TabelaSimbolos tabelaSimbolos;
+NodoSimbolo* nodo;
+int num_vars, novas_vars, nivel, deslocamento;
+char nome_comando[50];
+char conteudo_comando[50];
 
 %}
 
@@ -28,41 +29,71 @@ int num_vars;
 
 %%
 
-programa    :{ geraCodigo (NULL, "INPP");}
-            PROGRAM IDENT
-            ABRE_PARENTESES lista_idents FECHA_PARENTESES PONTO_E_VIRGULA
-            bloco PONTO { geraCodigo (NULL, "PARA");}
+programa    :  { 
+                  geraCodigo (NULL, "INPP");
+               }
+               PROGRAM IDENT
+               ABRE_PARENTESES lista_idents FECHA_PARENTESES PONTO_E_VIRGULA
+               bloco PONTO 
+               { 
+                  remove_nodo(&tabelaSimbolos, num_vars);
+                  strcpy(nome_comando, "DMEM \0");
+                  sprintf(conteudo_comando, "%d", num_vars);
+                  strcat(nome_comando, conteudo_comando);
+                  geraCodigo(NULL, nome_comando);
+                  geraCodigo (NULL, "PARA");
+               }
 ;
 
 bloco       :parte_declara_vars{}
             comando_composto
 ;
 
-parte_declara_vars:  var
+parte_declara_vars:  var  
+                     {
+                        strcpy(nome_comando, "AMEM \0");
+                        sprintf(conteudo_comando, "%d", num_vars);
+                        strcat(nome_comando, conteudo_comando);
+                        geraCodigo(NULL, nome_comando);
+                     }
 ;
 
 var         : { } VAR declara_vars
-            |
+            | declara_vars
 ;
 
-declara_vars: declara_vars { num_vars=0; } declara_var
-            | { num_vars=0; }declara_var
+declara_vars: declara_vars declara_var
+            | declara_var
 ;
 
-declara_var : { }
-              lista_id_var DOIS_PONTOS
-              tipo
-              { /* AMEM */
-              }
-              PONTO_E_VIRGULA
+declara_var :  { 
+                  novas_vars = 0; 
+               }
+               lista_id_var DOIS_PONTOS
+               tipo
+               PONTO_E_VIRGULA 
+               { 
+                  num_vars += novas_vars; 
+               }
 ;
 
 tipo        : INTEGER
 ;
 
 lista_id_var: lista_id_var VIRGULA IDENT
-              { /* insere �ltima vars na tabela de s�mbolos */ }
-            | IDENT { /* insere vars na tabela de s�mbolos */}
+               { 
+                  novas_vars++;
+                  nodo = cria_nodo(token, nivel, deslocamento);
+                  insereTabelaSimbolos(&tabelaSimbolos, nodo);
+                  deslocamento++;
+               }
+            | IDENT               
+               { 
+                  novas_vars++;
+                  nodo = cria_nodo(token, nivel, deslocamento);
+                  insereTabelaSimbolos(&tabelaSimbolos, nodo);
+                  deslocamento++;
+               }
 ;
 
 lista_idents: lista_idents VIRGULA IDENT
@@ -94,9 +125,16 @@ int main (int argc, char** argv) {
    }
 
 
-/* -------------------------------------------------------------------
- *  Inicia a Tabela de S�mbolos
- * ------------------------------------------------------------------- */
+/* Inicia a Tabela de Simbolos -------------------------------------- */
+   inicializaTabelaSimbolos(&tabelaSimbolos);
+/* -------------------------------------------------------------------*/
+
+/* Inicia variaveis globais ------------------------------------------*/
+   novas_vars = 0;
+   num_vars = 0;
+   nivel = 0;
+   deslocamento = 0;
+/* -------------------------------------------------------------------*/
 
    yyin=fp;
    yyparse();
