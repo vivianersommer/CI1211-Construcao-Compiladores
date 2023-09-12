@@ -130,6 +130,38 @@ regra_vazia:
 ;
 
 comando_sem_rotulo:  atribuicao 
+                     | READ ABRE_PARENTESES leitura FECHA_PARENTESES PONTO_E_VIRGULA
+                     | WRITE ABRE_PARENTESES impressao FECHA_PARENTESES PONTO_E_VIRGULA
+;
+
+leitura: leitura VIRGULA IDENT  
+            { 
+               geraCodigo(NULL, "LEIT"); 
+               nodo = buscaNodoTabelaSimbolos(&tabelaSimbolos, token); 
+               strcpy(nome_comando, "ARMZ \0");
+               sprintf(conteudo_comando, "%d, %d", nivel_destino, deslocamento_destino);
+               strcat(nome_comando, conteudo_comando);
+               geraCodigo(NULL, nome_comando);
+            }
+            | IDENT                               
+            { 
+               geraCodigo(NULL, "LEIT"); 
+               nodo = buscaNodoTabelaSimbolos(&tabelaSimbolos, token); 
+               strcpy(nome_comando, "ARMZ \0");
+               sprintf(conteudo_comando, "%d, %d", nivel_destino, deslocamento_destino);
+               strcat(nome_comando, conteudo_comando);
+               geraCodigo(NULL, nome_comando);
+            } 
+;
+
+impressao:  impressao VIRGULA fator
+            { 
+               geraCodigo(NULL, "IMPR"); 
+            }
+            | IDENT                               
+            { 
+               geraCodigo(NULL, "IMPR"); 
+            } 
 ;
 
 atribuicao:    variavel 
@@ -210,24 +242,33 @@ termo:   fator MULTIPLICACAO fator
          | fator
 ;
 
-fator:   ABRE_PARENTESES expressao FECHA_PARENTESES                
-         | variavel
+fator:   variavel
          | NUMERO  
          { 
             strcpy(nome_comando, "CRCT \0");
             strcat(nome_comando, token);
             geraCodigo(NULL, nome_comando);
          }
+         | ABRE_PARENTESES expressao FECHA_PARENTESES                
          | TRUE    
          { 
-            geraCodigo (NULL, "CRCT 1"); 
+            geraCodigo(NULL, "CRCT 1"); 
          }
          | FALSE   
          { 
-            geraCodigo (NULL, "CRCT 0"); 
+            geraCodigo(NULL, "CRCT 0"); 
+         }
+         | T_NOT fator
+         {
+            geraCodigo(NULL, "NEGA");
          }
 ;
 
+// comando_repetitivo:  T_WHILE 
+//                      expressao 
+//                      T_DO
+//                      comando_sem_rotulo
+// ;
 
 %%
 
