@@ -9,7 +9,9 @@
 
 TabelaSimbolos tabelaSimbolos;
 NodoSimbolo* nodo;
-int num_vars, novas_vars, nivel, deslocamento;
+int num_vars, novas_vars; 
+int nivel, deslocamento; 
+int nivel_destino, deslocamento_destino;
 char nome_comando[50];
 char conteudo_comando[50];
 
@@ -36,7 +38,7 @@ programa    :  {
                ABRE_PARENTESES lista_idents FECHA_PARENTESES PONTO_E_VIRGULA
                bloco PONTO 
                { 
-                  remove_nodo(&tabelaSimbolos, num_vars);
+                  removeNodoTabelaSimbolos(&tabelaSimbolos, num_vars);
                   strcpy(nome_comando, "DMEM \0");
                   sprintf(conteudo_comando, "%d", num_vars);
                   strcat(nome_comando, conteudo_comando);
@@ -83,15 +85,15 @@ tipo        : INTEGER
 lista_id_var: lista_id_var VIRGULA IDENT
                { 
                   novas_vars++;
-                  nodo = cria_nodo(token, nivel, deslocamento);
-                  insereTabelaSimbolos(&tabelaSimbolos, nodo);
+                  nodo = criaNodo(token, nivel, deslocamento);
+                  insereNodoTabelaSimbolos(&tabelaSimbolos, nodo);
                   deslocamento++;
                }
-            | IDENT               
+               | IDENT               
                { 
                   novas_vars++;
-                  nodo = cria_nodo(token, nivel, deslocamento);
-                  insereTabelaSimbolos(&tabelaSimbolos, nodo);
+                  nodo = criaNodo(token, nivel, deslocamento);
+                  insereNodoTabelaSimbolos(&tabelaSimbolos, nodo);
                   deslocamento++;
                }
 ;
@@ -102,8 +104,128 @@ lista_idents: lista_idents VIRGULA IDENT
 
 
 comando_composto: T_BEGIN comandos T_END
+;
 
-comandos:
+comandos:   comandos comando 
+            | comando
+            | regra_vazia
+;
+
+comando: numero_nada comando_sem_rotulo
+;
+
+numero_nada:   numero 
+               | regra_vazia
+;
+
+numero:  NUMERO 
+         {
+            strcpy(nome_comando, "CRCT \0");
+            strcat(nome_comando, token);
+            geraCodigo(NULL, nome_comando);
+			}
+;
+
+regra_vazia:
+;
+
+comando_sem_rotulo:  atribuicao 
+;
+
+atribuicao:    variavel 
+               {
+                  nivel_destino = nodo->nivel;
+                  deslocamento_destino = nodo->deslocamento;
+               }
+               ATRIBUICAO expressao 
+               {
+                  strcpy(nome_comando, "ARMZ \0");
+                  sprintf(conteudo_comando, "%d, %d", nivel_destino, deslocamento_destino);
+                  strcat(nome_comando, conteudo_comando);
+                  geraCodigo(NULL, nome_comando);
+               }
+               PONTO_E_VIRGULA
+;
+
+variavel:   IDENT 
+            {
+               nodo = buscaNodoTabelaSimbolos(&tabelaSimbolos, token);
+               if (!nodo) {
+                  fprintf(stderr, "Erro");
+                  exit(1);
+               }
+				}
+;
+
+expressao   :  expressao_simples MAIOR expressao_simples
+               { 
+                  geraCodigo (NULL, "CMMA"); 
+               }
+               | expressao_simples MENOR expressao_simples  
+               { 
+                  geraCodigo (NULL, "CMME"); 
+               }
+               | expressao_simples MAIOR_OU_IGUAL expressao_simples  
+               { 
+                  geraCodigo (NULL, "CMAG"); 
+               }
+               | expressao_simples MENOR_OU_IGUAL expressao_simples  
+               { 
+                  geraCodigo (NULL, "CMEG"); 
+               }
+               | expressao_simples IGUAL expressao_simples  
+               { 
+                  geraCodigo (NULL, "CMIG"); 
+               }
+               | expressao_simples
+;
+
+expressao_simples:   expressao_simples MAIS termo       
+                     { 
+                        geraCodigo (NULL, "SOMA"); 
+                     }
+                     | expressao_simples MENOS termo  
+                     { 
+                        geraCodigo (NULL, "SUBT"); 
+                     }
+                     | expressao_simples T_OR termo         
+                     { 
+                        geraCodigo (NULL, "DISJ"); 
+                     }
+                     | termo
+;
+
+termo:   fator MULTIPLICACAO fator 
+         { 
+            geraCodigo (NULL, "MULT"); 
+         }
+         | fator T_DIVISAO_INT fator       
+         { 
+            geraCodigo (NULL, "DIVI"); 
+         }
+         | fator T_AND fator           
+         { 
+            geraCodigo (NULL, "CONJ"); 
+         }
+         | fator
+;
+
+fator:   ABRE_PARENTESES expressao FECHA_PARENTESES                
+         | variavel
+         | NUMERO  
+         { 
+            strcpy(nome_comando, "CRCT \0");
+            strcat(nome_comando, token);
+            geraCodigo(NULL, nome_comando);
+         }
+         | TRUE    
+         { 
+            geraCodigo (NULL, "CRCT 1"); 
+         }
+         | FALSE   
+         { 
+            geraCodigo (NULL, "CRCT 0"); 
+         }
 ;
 
 
@@ -134,6 +256,8 @@ int main (int argc, char** argv) {
    num_vars = 0;
    nivel = 0;
    deslocamento = 0;
+   nivel_destino = 0;
+   deslocamento_destino = 0;
 /* -------------------------------------------------------------------*/
 
    yyin=fp;

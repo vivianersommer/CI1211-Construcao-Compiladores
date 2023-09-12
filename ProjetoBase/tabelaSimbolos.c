@@ -7,13 +7,13 @@ void inicializaTabelaSimbolos(TabelaSimbolos* tabelaSimbolos) {
 	tabelaSimbolos->cabeca = NULL;
 }
 
-void insereTabelaSimbolos(TabelaSimbolos* tabelaSimbolos, NodoSimbolo* nodo) {
+void insereNodoTabelaSimbolos(TabelaSimbolos* tabelaSimbolos, NodoSimbolo* nodo) {
 	nodo->proximo = tabelaSimbolos->cabeca;
 	tabelaSimbolos->cabeca = nodo; 
 	tabelaSimbolos->tamanho++;
 }
 
-NodoSimbolo *cria_nodo(char *token, int nivel, int deslocamento) {
+NodoSimbolo *criaNodo(char *token, int nivel, int deslocamento) {
 	NodoSimbolo *nodo = (NodoSimbolo*) malloc(sizeof(NodoSimbolo));
 	nodo->ident = (char *) malloc(sizeof(token));
 	strcpy(nodo->ident, token);
@@ -22,7 +22,7 @@ NodoSimbolo *cria_nodo(char *token, int nivel, int deslocamento) {
 	return nodo;
 }
 
-TabelaSimbolos* remove_nodo(TabelaSimbolos* tabelaSimbolos, int tamanho) {
+TabelaSimbolos* removeNodoTabelaSimbolos(TabelaSimbolos* tabelaSimbolos, int tamanho) {
 
 	int quantidade = tabelaSimbolos->tamanho > tamanho ? tamanho : tabelaSimbolos->tamanho;
 	NodoSimbolo *temporario;
@@ -33,4 +33,17 @@ TabelaSimbolos* remove_nodo(TabelaSimbolos* tabelaSimbolos, int tamanho) {
 		tabelaSimbolos->tamanho--;
 	}
 	return tabelaSimbolos;
+}
+
+NodoSimbolo *buscaNodoTabelaSimbolos(TabelaSimbolos* tabelaSimbolos, char* variavel) {
+	NodoSimbolo* cabeca = tabelaSimbolos->cabeca;
+	int i = 0;
+
+	while ((i < tabelaSimbolos->tamanho) && 
+            (strcmp(variavel, cabeca->ident))) {
+		cabeca = cabeca->proximo;
+		i++;
+	}
+
+	return cabeca;
 }

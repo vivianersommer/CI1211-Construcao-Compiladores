@@ -14,6 +14,7 @@ typedef struct TabelaSimbolos{
 } TabelaSimbolos;
 
 void inicializaTabelaSimbolos(TabelaSimbolos* tabelaSimbolos);
-void insereTabelaSimbolos(TabelaSimbolos* tabelaSimbolos, NodoSimbolo* nodo);
-NodoSimbolo *cria_nodo(char *token, int nivel, int deslocamento);
-TabelaSimbolos* remove_nodo(TabelaSimbolos* tabelaSimbolos, int tamanho);
+void insereNodoTabelaSimbolos(TabelaSimbolos* tabelaSimbolos, NodoSimbolo* nodo);
+NodoSimbolo *criaNodo(char *token, int nivel, int deslocamento);
+TabelaSimbolos* removeNodoTabelaSimbolos(TabelaSimbolos* tabelaSimbolos, int tamanho);
+NodoSimbolo *buscaNodoTabelaSimbolos(TabelaSimbolos* tabelaSimbolos, char* variavel);
