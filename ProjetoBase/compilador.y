@@ -31,7 +31,7 @@ char conteudo_comando[50];
 
 %%
 
-programa    :  { 
+programa    :  {
                   geraCodigo (NULL, "INPP");
                }
                PROGRAM IDENT
@@ -47,7 +47,9 @@ programa    :  {
                }
 ;
 
-bloco       :parte_declara_vars{}
+bloco       :parte_declara_vars
+	    {
+	    }
             comando_composto
 ;
 
@@ -73,13 +75,16 @@ declara_var :  {
                }
                lista_id_var DOIS_PONTOS
                tipo
-               PONTO_E_VIRGULA 
+               PONTO_E_VIRGULA
                { 
                   num_vars += novas_vars; 
                }
 ;
 
 tipo        : INTEGER
+	      {
+	      	adicionaTipoVariavel(&tabelaSimbolos, novas_vars, INTEIRO);
+	      }
 ;
 
 lista_id_var: lista_id_var VIRGULA IDENT
@@ -108,28 +113,27 @@ comando_composto: T_BEGIN comandos T_END
 
 comandos:   comandos comando 
             | comando
-            | regra_vazia
 ;
 
-comando: numero_nada comando_sem_rotulo
+comando: numero_ou_regra_vazia comando_sem_rotulo
 ;
 
-numero_nada:   numero 
-               | regra_vazia
+numero_ou_regra_vazia:   numero
+              		 | regra_vazia
 ;
 
-numero:  NUMERO 
+numero:  NUMERO
          {
             strcpy(nome_comando, "CRCT \0");
             strcat(nome_comando, token);
             geraCodigo(NULL, nome_comando);
-			}
+	 }
 ;
 
 regra_vazia:
 ;
 
-comando_sem_rotulo:  atribuicao 
+comando_sem_rotulo:  atribuicao
                      | READ ABRE_PARENTESES leitura FECHA_PARENTESES PONTO_E_VIRGULA
                      | WRITE ABRE_PARENTESES impressao FECHA_PARENTESES PONTO_E_VIRGULA
 ;
@@ -155,10 +159,10 @@ leitura: leitura VIRGULA IDENT
 ;
 
 impressao:  impressao VIRGULA fator
-            { 
-               geraCodigo(NULL, "IMPR"); 
+            {
+               geraCodigo(NULL, "IMPR");
             }
-            | IDENT                               
+            | fator
             { 
                geraCodigo(NULL, "IMPR"); 
             } 

@@ -47,3 +47,11 @@ NodoSimbolo *buscaNodoTabelaSimbolos(TabelaSimbolos* tabelaSimbolos, char* varia
 
 	return cabeca;
 }
+
+void adicionaTipoVariavel(TabelaSimbolos *tabelaSimbolos, int quantidade, TipoVariavel tipo) {
+	NodoSimbolo* nodo = tabelaSimbolos->cabeca;
+	while (tabelaSimbolos && quantidade--) {
+		nodo->tipo = tipo;
+		nodo = nodo->proximo;
+	}
+}
