@@ -4,11 +4,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include "compilador.h"
-#include "tabelaSimbolos.h"
+#include "estruturas/tabelaSimbolos.h"
+#include "estruturas/rotulos.h"
+#include "estruturas/deslocamentos.h"
 
 
 TabelaSimbolos tabelaSimbolos;
 NodoSimbolo* nodo;
+PilhaRotulos rotulos;
+PilhaDeslocamentos deslocamentos;
 int num_vars, novas_vars; 
 int nivel, deslocamento; 
 int nivel_destino, deslocamento_destino;
@@ -268,6 +272,16 @@ fator:   variavel
          }
 ;
 
+//repeticao : WHILE       { geraRotulo(&rotulo_mepa, &cont_rotulo, &pilha_rot);
+//                            geraCodigo (rotulo_mepa, "NADA"); }
+//            expressao   { geraRotulo(&rotulo_mepa, &cont_rotulo, &pilha_rot);
+//                            geraCodigoArgs (NULL, "DSVF %s", rotulo_mepa); }
+//            DO comando  { rotulo_mepa_aux=desempilha(&pilha_rot);
+//                            rotulo_mepa=desempilha(&pilha_rot);
+//                            geraCodigoArgs (NULL, "DSVS %s", rotulo_mepa);
+//                            geraCodigo (rotulo_mepa_aux, "NADA"); }
+//;
+
 // comando_repetitivo:  T_WHILE 
 //                      expressao 
 //                      T_DO
@@ -294,7 +308,12 @@ int main (int argc, char** argv) {
 
 /* Inicia a Tabela de Simbolos -------------------------------------- */
    inicializaTabelaSimbolos(&tabelaSimbolos);
-/* -------------------------------------------------------------------*/
+
+/* Inicia a Pilha de Rótulos ---------------------------------------- */
+   inicializaPilhaRotulos(&rotulos);
+
+/* Inicia a Tabela de Simbolos -------------------------------------- */
+   inicializaPilhaDeslocamentos(&deslocamentos);
 
 /* Inicia variaveis globais ------------------------------------------*/
    novas_vars = 0;
@@ -303,7 +322,6 @@ int main (int argc, char** argv) {
    deslocamento = 0;
    nivel_destino = 0;
    deslocamento_destino = 0;
-/* -------------------------------------------------------------------*/
 
    yyin=fp;
    yyparse();
