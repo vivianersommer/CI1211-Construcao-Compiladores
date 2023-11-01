@@ -12,9 +12,9 @@ typedef struct PilhaRotulos {
     Pilha *rotulos;
 }PilhaRotulos;
 
-void inicializaPilhaRotulos(PilhaRotulos *pilhaRotulos);
+PilhaRotulos *inicializaPilhaRotulos();
 int geraRotulos(PilhaRotulos *pilhaRotulos);
-void desempilhaRotulo(PilhaRotulos *pilhaRotulos);
+int desempilhaRotulo(PilhaRotulos *pilhaRotulos);
 void empilhaRotulo(PilhaRotulos *pilhaRotulos, int identificador);
 
 #endif

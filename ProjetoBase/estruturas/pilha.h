@@ -11,8 +11,8 @@ typedef struct Pilha {
     int tamanhoMaximo;
 }Pilha;
 
-void inicializaPilha(Pilha *pilha);
+Pilha *inicializaPilha();
 void empilha(Pilha *pilha, void *novoElemento);
-void desempilha(Pilha *s);
+void *desempilha(Pilha *s);
 
 #endif

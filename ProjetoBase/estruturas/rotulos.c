@@ -2,11 +2,12 @@
 
 int numeroRotulos;
 
-void inicializaPilhaRotulos(PilhaRotulos *pilhaRotulos) {
+PilhaRotulos *inicializaPilhaRotulos() {
 
     numeroRotulos = 0;
-    pilhaRotulos = (PilhaRotulos*) malloc(sizeof(PilhaRotulos));
-    inicializaPilha(pilhaRotulos->rotulos);
+    PilhaRotulos *pilhaRotulos = (PilhaRotulos*) malloc(sizeof(PilhaRotulos));
+    pilhaRotulos->rotulos = inicializaPilha(pilhaRotulos->rotulos);
+    return pilhaRotulos;
 }
 
 int geraRotulos(PilhaRotulos *pilhaRotulos) {
@@ -15,15 +16,15 @@ int geraRotulos(PilhaRotulos *pilhaRotulos) {
     rotulo->identificador = numeroRotulos;
 
     empilha(pilhaRotulos->rotulos, rotulo);
-
     numeroRotulos = numeroRotulos + 1;
 
     return rotulo->identificador;
 }
 
-void desempilhaRotulo(PilhaRotulos *pilhaRotulos) {
+int desempilhaRotulo(PilhaRotulos *pilhaRotulos) {
 
-    desempilha(pilhaRotulos->rotulos);
+    Rotulo *rotulo = desempilha(pilhaRotulos->rotulos);
+    return rotulo->identificador;
 }
 
 void empilhaRotulo(PilhaRotulos *pilhaRotulos, int identificador) {

@@ -11,11 +11,13 @@
 
 TabelaSimbolos tabelaSimbolos;
 NodoSimbolo* nodo;
-PilhaRotulos rotulos;
-PilhaDeslocamentos deslocamentos;
+PilhaRotulos* rotulos;
+PilhaDeslocamentos* deslocamentos;
 int num_vars, novas_vars; 
-int nivel, deslocamento; 
+int nivel, deslocamento;
 int nivel_destino, deslocamento_destino;
+int inicioRotulos;
+int identificadorRotulo;
 char nome_comando[50];
 char conteudo_comando[50];
 
@@ -37,6 +39,7 @@ char conteudo_comando[50];
 
 programa    :  {
                   geraCodigo (NULL, "INPP");
+                  inicioRotulos = geraRotulos(rotulos);
                }
                PROGRAM IDENT
                ABRE_PARENTESES lista_idents FECHA_PARENTESES PONTO_E_VIRGULA
@@ -140,6 +143,7 @@ regra_vazia:
 comando_sem_rotulo:  atribuicao
                      | READ ABRE_PARENTESES leitura FECHA_PARENTESES PONTO_E_VIRGULA
                      | WRITE ABRE_PARENTESES impressao FECHA_PARENTESES PONTO_E_VIRGULA
+                     | repeticao
 ;
 
 leitura: leitura VIRGULA IDENT  
@@ -272,15 +276,44 @@ fator:   variavel
          }
 ;
 
-//repeticao : WHILE       { geraRotulo(&rotulo_mepa, &cont_rotulo, &pilha_rot);
-//                            geraCodigo (rotulo_mepa, "NADA"); }
-//            expressao   { geraRotulo(&rotulo_mepa, &cont_rotulo, &pilha_rot);
-//                            geraCodigoArgs (NULL, "DSVF %s", rotulo_mepa); }
-//            DO comando  { rotulo_mepa_aux=desempilha(&pilha_rot);
-//                            rotulo_mepa=desempilha(&pilha_rot);
-//                            geraCodigoArgs (NULL, "DSVS %s", rotulo_mepa);
-//                            geraCodigo (rotulo_mepa_aux, "NADA"); }
-//;
+repeticao:     T_WHILE
+	       {
+		  identificadorRotulo = geraRotulos(rotulos);
+		  if (identificadorRotulo<9){
+			sprintf(nome_comando, "%s%d", "R0", identificadorRotulo);
+		  } else{
+			sprintf(nome_comando, "%s%d", "R", identificadorRotulo);
+		  }
+		  geraCodigo(nome_comando, "NADA");
+	       }
+	       expressao
+	       {
+		  identificadorRotulo = geraRotulos(rotulos);
+		  if (identificadorRotulo<9){
+			sprintf(nome_comando, "%s%d", "R0", identificadorRotulo);
+		  } else{
+			sprintf(nome_comando, "%s%d", "R", identificadorRotulo);
+		  }
+		  geraCodigo(NULL, nome_comando);
+	       }
+	       T_DO comando_composto
+	       {
+		  int rotulo_1 = desempilhaRotulo(rotulos);
+		  int rotulo_2 = desempilhaRotulo(rotulos);
+		  if (identificadorRotulo<9){
+			sprintf(nome_comando, "%s%d", "R0", identificadorRotulo);
+		  } else{
+			sprintf(nome_comando, "%s%d", "R", identificadorRotulo);
+		  }
+		  geraCodigo(NULL, nome_comando);
+		  if (identificadorRotulo<9){
+			sprintf(nome_comando, "%s%d", "R0", identificadorRotulo);
+		  } else{
+			sprintf(nome_comando, "%s%d", "R", identificadorRotulo);
+		  }
+		  geraCodigo(NULL, nome_comando);
+		}
+;
 
 // comando_repetitivo:  T_WHILE 
 //                      expressao 
@@ -310,10 +343,10 @@ int main (int argc, char** argv) {
    inicializaTabelaSimbolos(&tabelaSimbolos);
 
 /* Inicia a Pilha de Rótulos ---------------------------------------- */
-   inicializaPilhaRotulos(&rotulos);
+   rotulos = inicializaPilhaRotulos();
 
 /* Inicia a Tabela de Simbolos -------------------------------------- */
-   inicializaPilhaDeslocamentos(&deslocamentos);
+   deslocamentos = inicializaPilhaDeslocamentos();
 
 /* Inicia variaveis globais ------------------------------------------*/
    novas_vars = 0;

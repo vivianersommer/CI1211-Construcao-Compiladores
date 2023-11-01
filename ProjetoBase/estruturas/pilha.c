@@ -1,12 +1,13 @@
 #include "pilha.h"
-#define MAX 100
+#define MAX 20
 
-void inicializaPilha(Pilha *pilha) {
+Pilha *inicializaPilha(Pilha *pilha) {
 
     pilha = (Pilha*) malloc(sizeof(Pilha));
     pilha->elementos = (void **) malloc(MAX*sizeof(void *));
     pilha->tamanhoMaximo = MAX;
     pilha->tamanhoAtual = 0;
+    return pilha;
 }
 
 void empilha(Pilha *pilha, void *elemento) {
@@ -21,11 +22,12 @@ void empilha(Pilha *pilha, void *elemento) {
 }
 
 
-void desempilha(Pilha *pilha) {
+void *desempilha(Pilha *pilha) {
 
     if (pilha->tamanhoAtual <= 0) {
         printf("Erro ao desempilhar -----------------------------\n");
     }
 
     pilha->tamanhoAtual--;
+    return pilha->elementos[pilha->tamanhoAtual];
 }

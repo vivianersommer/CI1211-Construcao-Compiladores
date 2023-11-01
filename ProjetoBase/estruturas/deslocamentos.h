@@ -12,8 +12,8 @@ typedef struct PilhaDeslocamentos {
     Pilha *deslocamentos;
 } PilhaDeslocamentos;
 
-void inicializaPilhaDeslocamentos(PilhaDeslocamentos *pilhaDeslocamentos);
+PilhaDeslocamentos *inicializaPilhaDeslocamentos();
 void empilhaDescolamento(PilhaDeslocamentos *pilhaDeslocamentos, int identificador);
-void desempilhaDescolamento(PilhaDeslocamentos *pilhaDeslocamentos);
+int desempilhaDescolamento(PilhaDeslocamentos *pilhaDeslocamentos);
 
 #endif

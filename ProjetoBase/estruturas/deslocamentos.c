@@ -1,9 +1,10 @@
 #include "deslocamentos.h"
 
-void inicializaPilhaDeslocamentos(PilhaDeslocamentos *pilhaDeslocamentos) {
+PilhaDeslocamentos *inicializaPilhaDeslocamentos() {
 
-    pilhaDeslocamentos = (PilhaDeslocamentos*) malloc(sizeof(PilhaDeslocamentos));
-    inicializaPilha(pilhaDeslocamentos->deslocamentos);
+    PilhaDeslocamentos *pilhaDeslocamentos = (PilhaDeslocamentos*) malloc(sizeof(PilhaDeslocamentos));
+    pilhaDeslocamentos->deslocamentos = inicializaPilha(pilhaDeslocamentos->deslocamentos);
+    return pilhaDeslocamentos;
 }
 
 void empilhaDescolamento(PilhaDeslocamentos *pilhaDeslocamentos, int identificador) {
@@ -13,6 +14,7 @@ void empilhaDescolamento(PilhaDeslocamentos *pilhaDeslocamentos, int identificad
     empilha(pilhaDeslocamentos->deslocamentos, deslocamento);
 }
 
-void desempilhaDescolamento(PilhaDeslocamentos *pilhaDeslocamentos) {
-    desempilha(pilhaDeslocamentos->deslocamentos);
+int desempilhaDescolamento(PilhaDeslocamentos *pilhaDeslocamentos) {
+    Deslocamento *deslocamento = desempilha(pilhaDeslocamentos->deslocamentos);
+    return deslocamento->identificador;
 }
