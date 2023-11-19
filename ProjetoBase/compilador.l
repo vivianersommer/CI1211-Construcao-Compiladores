@@ -112,13 +112,13 @@ else { simbolo = simb_else;
 
 while { simbolo = simb_while;
           strncpy (token, yytext, TAM_TOKEN);
-          IMPRIME("while  ");
+          IMPRIME(" while ");
           return T_WHILE;
  }
 
 do { simbolo = simb_do;
           strncpy (token, yytext, TAM_TOKEN);
-          IMPRIME("do  ");
+          IMPRIME(" do ");
           return T_DO;
  }
 
@@ -156,18 +156,6 @@ write { simbolo = simb_write;
           strncpy (token, yytext, TAM_TOKEN);
           IMPRIME(" write");
           return WRITE;
-}
-
-integer { simbolo = simb_integer;
-          strncpy (token, yytext, TAM_TOKEN);
-          IMPRIME(" integer");
-          return INTEGER;
-}
-
-boolean { simbolo = simb_boolean;
-          strncpy (token, yytext, TAM_TOKEN);
-          IMPRIME(" boolean");
-          return BOOLEAN;
 }
 
 true { simbolo = simb_true;

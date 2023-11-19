@@ -7,8 +7,10 @@ typedef enum TipoVariavel {
 } TipoVariavel;
 
 typedef struct NodoSimbolo {
-	char *ident, *rotulo;
-	int nivel, deslocamento;
+	char *ident;
+	char *rotulo;
+	int nivel;
+	int deslocamento;
 	TipoVariavel tipo;
 	struct NodoSimbolo *proximo;
 } NodoSimbolo;
