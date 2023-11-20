@@ -131,7 +131,8 @@ comando:	comand_s_rot
 
 comand_s_rot:	comand_ident
 		| comand_compos
-		| comando_repetitivo
+		| repeticao
+		| condicional
                 | READ ABRE_PARENTESES leitura FECHA_PARENTESES PONTO_E_VIRGULA
                 | READ ABRE_PARENTESES leitura FECHA_PARENTESES
                 | WRITE ABRE_PARENTESES impressao FECHA_PARENTESES PONTO_E_VIRGULA
@@ -287,30 +288,65 @@ funcao_lista:	{
 		}
 ;
 
-comando_repetitivo:	T_WHILE
-		        {
-				identificadorRotulo = geraRotulos(rotulos);
-				sprintf(nome_comando, "R%02d", identificadorRotulo);
-				geraCodigo(nome_comando, "NADA");
-		        }
-		       	expressao
-		       	{
-				identificadorRotulo = geraRotulos(rotulos);
-				sprintf(nome_comando, "%s %s%d", "DSVF", "R0", identificadorRotulo);
-				geraCodigo(NULL, nome_comando);
-		      	}
-		      	 T_DO comand_s_rot
-		      	{
-				int rotulo_1 = desempilhaRotulo(rotulos);
-				int rotulo_2 = desempilhaRotulo(rotulos);
-				sprintf(nome_comando, "%s %s%d", "DSVS", "R0", rotulo_2);
-				geraCodigo(NULL, nome_comando);
-				sprintf(nome_comando, "%s%d", "R0", rotulo_1);
-				geraCodigo(nome_comando, "NADA");
-		      	}
+repeticao:	T_WHILE
+		{
+			identificadorRotulo = geraRotulos(rotulos);
+			sprintf(nome_comando, "R%02d", identificadorRotulo);
+			geraCodigo(nome_comando, "NADA");
+		}
+		expressao
+		{
+			identificadorRotulo = geraRotulos(rotulos);
+			sprintf(nome_comando, "%s %s%d", "DSVF", "R0", identificadorRotulo);
+			geraCodigo(NULL, nome_comando);
+		}
+		 T_DO comand_s_rot
+		{
+			int rotulo_1 = desempilhaRotulo(rotulos);
+			int rotulo_2 = desempilhaRotulo(rotulos);
+			sprintf(nome_comando, "%s %s%d", "DSVS", "R0", rotulo_2);
+			geraCodigo(NULL, nome_comando);
+			sprintf(nome_comando, "%s%d", "R0", rotulo_1);
+			geraCodigo(nome_comando, "NADA");
+		}
 ;
 
+condicional:	if_then else
+		{
+			int rotulo_1 = desempilhaRotulo(rotulos);
+			sprintf(nome_comando, "%s%d", "R0", rotulo_1);
+			geraCodigo(nome_comando, "NADA");
+		}
+;
 
+if_then:	T_IF expressao
+		{
+			identificadorRotulo = geraRotulos(rotulos);
+			sprintf(nome_comando, "%s %s%d", "DSVS", "R0", identificadorRotulo);
+			geraCodigo(NULL, nome_comando);
+		}
+		T_THEN sub_bloco
+;
+
+else:		T_ELSE
+		{
+			identificadorRotulo = geraRotulos(rotulos);
+			sprintf(nome_comando, "%s %s%d", "DSVF", "R0", identificadorRotulo);
+			geraCodigo(NULL, nome_comando);
+			int rotulo_1 = desempilhaRotulo(rotulos);
+			int rotulo_2 = desempilhaRotulo(rotulos);
+			empilhaRotulo(rotulos, rotulo_1);
+			sprintf(nome_comando, "%s%d", "R0", rotulo_2);
+			geraCodigo(nome_comando, "NADA");
+
+		}
+		sub_bloco
+		| %prec LOWER_THAN_ELSE
+;
+
+sub_bloco:	comand_s_rot
+		| comand_compos
+;
 
 %%
 
