@@ -1,0 +1,52 @@
+program     # program 
+ ident      # exemploErro2 
+ abre_parenteses      # ( 
+ ident      # input 
+ virgula      # , 
+ ident      # output 
+ fecha_parenteses     # ) 
+ pt_virgula      # ; 
+var      # var 
+ ident      # n 
+
+TABELA SIMBOLOS: 
+[identificacao=n,tipoNodo=0,nivel=0,deslocamento=0,tipoVariavel=0]
+
+ virgula      # , 
+ ident      # k 
+
+TABELA SIMBOLOS: 
+[identificacao=n,tipoNodo=0,nivel=0,deslocamento=0,tipoVariavel=0]
+[identificacao=k,tipoNodo=0,nivel=0,deslocamento=1,tipoVariavel=0]
+
+ dois pontos     # : 
+ ident      # integer 
+ pt_virgula      # ; 
+begin     # begin 
+ read    # read 
+ abre_parenteses      # ( 
+ ident      # n 
+ fecha_parenteses     # ) 
+ pt_virgula      # ; 
+ read    # read 
+ abre_parenteses      # ( 
+ ident      # k 
+ fecha_parenteses     # ) 
+ pt_virgula      # ; 
+if      # if 
+ abre_parenteses      # ( 
+ ident      # n 
+ mais     # + 
+ numero    # 1 
+ fecha_parenteses     # ) 
+then      # then 
+ ident      # n 
+ atribuicao      # := 
+ numero    # 1 
+ pt_virgula      # ; 
+ write    # write 
+ abre_parenteses      # ( 
+ ident      # n 
+ fecha_parenteses     # ) 
+end      # end 
+ ponto      # . 

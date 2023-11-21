@@ -38,6 +38,7 @@ char procedimento_atual[1000];
 %token OF REPEAT UNTIL MAIS MENOS MULTIPLICACAO MAIOR
 %token MENOR_OU_IGUAL MAIOR_OU_IGUAL DIFERENTE IGUAL
 %token T_DIVISAO_real ABRE_COLCHETES FECHA_COLCHETES
+%token T_FORWARD
 
 %nonassoc LOWER_THAN_ELSE
 %nonassoc ELSE
@@ -186,21 +187,17 @@ atribuicao:	ATRIBUICAO expressao PONTO_E_VIRGULA
 
 leitura: 	leitura VIRGULA IDENT
             	{
-		       geraCodigo(NULL, "LEIT");
-		       nodo = buscaNodoTabelaSimbolos(tabelaSimbolos, token);
-		       strcpy(nome_comando_1, "ARMZ \0");
-		       sprintf(conteudo_comando, "%d, %d", nivel_destino, deslocamento_destino);
-		       strcat(nome_comando_1, conteudo_comando);
-		       geraCodigo(NULL, nome_comando_1);
+		       	geraCodigo(NULL, "LEIT");
+		      	nodo = buscaNodoTabelaSimbolos(tabelaSimbolos, token);
+		       	sprintf(nome_comando_1, "%s %d, %d", "ARMZ", nodo->nivel, nodo->deslocamento);
+		       	geraCodigo(NULL, nome_comando_1);
             	}
             	| IDENT
             	{
-		       geraCodigo(NULL, "LEIT");
-		       nodo = buscaNodoTabelaSimbolos(tabelaSimbolos, token);
-		       strcpy(nome_comando_1, "ARMZ \0");
-		       sprintf(conteudo_comando, "%d, %d", nivel_destino, deslocamento_destino);
-		       strcat(nome_comando_1, conteudo_comando);
-		       geraCodigo(NULL, nome_comando_1);
+		       	geraCodigo(NULL, "LEIT");
+		       	nodo = buscaNodoTabelaSimbolos(tabelaSimbolos, token);
+		       	sprintf(nome_comando_1, "%s %d, %d", "ARMZ", nodo->nivel, nodo->deslocamento);
+			geraCodigo(NULL, nome_comando_1);
             	}
 ;
 

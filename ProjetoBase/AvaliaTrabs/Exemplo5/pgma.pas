@@ -13,4 +13,3 @@ begin
    end;
    write (n, f1)
 end.
-

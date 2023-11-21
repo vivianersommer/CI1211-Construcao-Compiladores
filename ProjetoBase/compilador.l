@@ -301,6 +301,12 @@ until { simbolo = simb_ate;
           return FECHA_COLCHETES;
 }
 
+forward { simbolo = simb_forward;
+          strncpy (token, yytext, TAM_TOKEN);
+          IMPRIME(" forward  ");
+          return T_FORWARD;
+}
+
 {numero} { simbolo = simb_numero;
   strncpy (token, yytext, TAM_TOKEN);
   IMPRIME(" numero");
