@@ -16,7 +16,7 @@ typedef enum TipoNodo {
     VARIAVEL,
     PROCEDIMENTO,
     FUNCAO,
-    PF,
+    PARAMETRO_FORMAL,
     ROTULO
 } TipoNodo;
 
@@ -38,7 +38,7 @@ typedef struct TabelaSimbolos{
 
 TabelaSimbolos *inicializaTabelaSimbolos();
 void insereNodoVariavelTabelaSimbolos(TabelaSimbolos* tabelaSimbolos, char *ident, int nivel, int deslocamento);
-void insereNodoPFTabelaSimbolos(TabelaSimbolos* tabelaSimbolos, char *ident, int nivel);
+void insereNodoParametroFormalTabelaSimbolos(TabelaSimbolos* tabelaSimbolos, char *ident, int nivel);
 void insereNodoProcedimentoTabelaSimbolos(TabelaSimbolos* tabelaSimbolos, char *ident, int nivel, int rotulo);
 void insereNodoFuncaoTabelaSimbolos(TabelaSimbolos* tabelaSimbolos, char *ident, TipoVariavel tipoVariavel);
 void adicionaParametrosNodoProcedimento(TabelaSimbolos *tabelaSimbolos, char* ident, TipoParametro tipoParam, TipoVariavel tipoVar, int quantidade);

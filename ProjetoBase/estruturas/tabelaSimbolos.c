@@ -33,10 +33,10 @@ void insereNodoVariavelTabelaSimbolos(TabelaSimbolos* tabelaSimbolos, char *iden
 	empilha(tabelaSimbolos->pilha, nodo);
 }
 
-void insereNodoPFTabelaSimbolos(TabelaSimbolos* tabelaSimbolos, char *ident, int nivel) {
+void insereNodoParametroFormalTabelaSimbolos(TabelaSimbolos* tabelaSimbolos, char *ident, int nivel) {
 	NodoSimbolo *nodo = (NodoSimbolo*) malloc(sizeof(NodoSimbolo));
 
-	nodo->tipoNodo = PF;
+	nodo->tipoNodo = PARAMETRO_FORMAL;
 	nodo->nivel = nivel;
 	nodo->deslocamento = 0;
 	nodo->identificacao = (char *) malloc(sizeof(char) * strlen(ident));

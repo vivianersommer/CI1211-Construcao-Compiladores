@@ -11,6 +11,7 @@
 
 TabelaSimbolos* tabelaSimbolos;
 NodoSimbolo* nodo;
+TipoParametro modo_parametro;
 PilhaRotulos* rotulos;
 PilhaDeslocamentos* deslocamentos;
 int variaveis_inicializacao;
@@ -18,11 +19,11 @@ int nivel, deslocamento;
 int nivel_destino, deslocamento_destino;
 int inicioRotulos;
 int identificadorRotulo;
-char nome_comando[1000], nome_comando_2[1000];
-char conteudo_comando[1000], ident_aux[1000];
+char nome_comando_1[1000];
+char nome_comando_2[1000];
+char conteudo_comando[1000];
+char string_auxiliar[1000];
 char procedimento_atual[1000];
-TipoParametro modo_parametro;
-
 
 %}
 
@@ -37,7 +38,6 @@ TipoParametro modo_parametro;
 %token OF REPEAT UNTIL MAIS MENOS MULTIPLICACAO MAIOR
 %token MENOR_OU_IGUAL MAIOR_OU_IGUAL DIFERENTE IGUAL
 %token T_DIVISAO_real ABRE_COLCHETES FECHA_COLCHETES
-
 
 %nonassoc LOWER_THAN_ELSE
 %nonassoc ELSE
@@ -64,17 +64,17 @@ bloco:		{
 		subrot_opt
 		{
 			if (nivel == 0){
-				sprintf(nome_comando, "%s %s%d", "DSVS", "R0", inicioRotulos);
-				geraCodigo(NULL, nome_comando);
-				sprintf(nome_comando, "R%02d", inicioRotulos);
-				geraCodigo(nome_comando, "NADA");
+				sprintf(nome_comando_1, "%s %s%d", "DSVS", "R0", inicioRotulos);
+				geraCodigo(NULL, nome_comando_1);
+				sprintf(nome_comando_1, "R%02d", inicioRotulos);
+				geraCodigo(nome_comando_1, "NADA");
 		  	}
 		}
         	comand_compos
         	{
 			removeNodoTabelaSimbolos(tabelaSimbolos, deslocamento);
-			sprintf(nome_comando, "%s %d", "DMEM", deslocamento);
-			geraCodigo(NULL, nome_comando);
+			sprintf(nome_comando_1, "%s %d", "DMEM", deslocamento);
+			geraCodigo(NULL, nome_comando_1);
        		}
 ;
 
@@ -93,10 +93,7 @@ subrotina: 	procedimento
 part_decl_vars:	var
 ;
 
-var:		{
-			deslocamento = 0;
-	      	}
-	     	VAR declara_vars
+var:		VAR declara_vars
     	     	|
 ;
 
@@ -110,8 +107,8 @@ declara_var :	{
             	lista_id_var DOIS_PONTOS tipo
              	{
 	       		insereTipoVariavelTabelaSimbolos(tabelaSimbolos, variaveis_inicializacao, INTEIRO);
-    			sprintf(nome_comando, "%s %d", "AMEM", variaveis_inicializacao);
-			geraCodigo(NULL, nome_comando);
+    			sprintf(nome_comando_1, "%s %d", "AMEM", variaveis_inicializacao);
+			geraCodigo(NULL, nome_comando_1);
 
              	}
                	PONTO_E_VIRGULA
@@ -164,7 +161,7 @@ comand_s_rot:	comand_ident
 
 comand_ident:	IDENT
             	{
-              		strncpy(ident_aux, token, 100);
+              		strncpy(string_auxiliar, token, 100);
            	}
            	atri_proced
 ;
@@ -175,15 +172,15 @@ atri_proced:    atribuicao
 
 atribuicao:	ATRIBUICAO expressao PONTO_E_VIRGULA
 		{
-			nodo = buscaNodoTabelaSimbolos(tabelaSimbolos, ident_aux);
-			sprintf(nome_comando, "%s %d, %d", "ARMZ", nodo->nivel, nodo->deslocamento);
-			geraCodigo(NULL, nome_comando);
+			nodo = buscaNodoTabelaSimbolos(tabelaSimbolos, string_auxiliar);
+			sprintf(nome_comando_1, "%s %d, %d", "ARMZ", nodo->nivel, nodo->deslocamento);
+			geraCodigo(NULL, nome_comando_1);
 		}
 		| ATRIBUICAO expressao
 		{
-			nodo = buscaNodoTabelaSimbolos(tabelaSimbolos, ident_aux);
-			sprintf(nome_comando, "%s %d, %d", "ARMZ", nodo->nivel, nodo->deslocamento);
-			geraCodigo(NULL, nome_comando);
+			nodo = buscaNodoTabelaSimbolos(tabelaSimbolos, string_auxiliar);
+			sprintf(nome_comando_1, "%s %d, %d", "ARMZ", nodo->nivel, nodo->deslocamento);
+			geraCodigo(NULL, nome_comando_1);
 		}
 ;
 
@@ -191,19 +188,19 @@ leitura: 	leitura VIRGULA IDENT
             	{
 		       geraCodigo(NULL, "LEIT");
 		       nodo = buscaNodoTabelaSimbolos(tabelaSimbolos, token);
-		       strcpy(nome_comando, "ARMZ \0");
+		       strcpy(nome_comando_1, "ARMZ \0");
 		       sprintf(conteudo_comando, "%d, %d", nivel_destino, deslocamento_destino);
-		       strcat(nome_comando, conteudo_comando);
-		       geraCodigo(NULL, nome_comando);
+		       strcat(nome_comando_1, conteudo_comando);
+		       geraCodigo(NULL, nome_comando_1);
             	}
             	| IDENT
             	{
 		       geraCodigo(NULL, "LEIT");
 		       nodo = buscaNodoTabelaSimbolos(tabelaSimbolos, token);
-		       strcpy(nome_comando, "ARMZ \0");
+		       strcpy(nome_comando_1, "ARMZ \0");
 		       sprintf(conteudo_comando, "%d, %d", nivel_destino, deslocamento_destino);
-		       strcat(nome_comando, conteudo_comando);
-		       geraCodigo(NULL, nome_comando);
+		       strcat(nome_comando_1, conteudo_comando);
+		       geraCodigo(NULL, nome_comando_1);
             	}
 ;
 
@@ -287,9 +284,9 @@ termo:		fator
 fator:		var_func
 		| NUMERO
 	 	{
-		 	strcpy(nome_comando, "CRCT \0");
-			strcat(nome_comando, token);
-			geraCodigo(NULL, nome_comando);
+		 	strcpy(nome_comando_1, "CRCT \0");
+			strcat(nome_comando_1, token);
+			geraCodigo(NULL, nome_comando_1);
 		}
 		| ABRE_PARENTESES expressao FECHA_PARENTESES
 		| T_NOT fator
@@ -300,7 +297,7 @@ fator:		var_func
 
 var_func:	IDENT
 		{
-		       strncpy(nome_comando, token, 100);
+		       strncpy(nome_comando_1, token, 100);
 		}
 		funcao_lista
 ;
@@ -312,48 +309,48 @@ funcao_lista:
 		assinatura
 		|
 		{
-			nodo = buscaNodoTabelaSimbolos(tabelaSimbolos, nome_comando);
-			sprintf(nome_comando, "%s %d, %d", "CRVL", nodo->nivel, nodo->deslocamento);
-        		geraCodigo(NULL, nome_comando);
+			nodo = buscaNodoTabelaSimbolos(tabelaSimbolos, nome_comando_1);
+			sprintf(nome_comando_1, "%s %d, %d", "CRVL", nodo->nivel, nodo->deslocamento);
+        		geraCodigo(NULL, nome_comando_1);
 		}
 ;
 
 repeticao:	T_WHILE
 		{
 			identificadorRotulo = geraRotulos(rotulos);
-			sprintf(nome_comando, "R%02d", identificadorRotulo);
-			geraCodigo(nome_comando, "NADA");
+			sprintf(nome_comando_1, "R%02d", identificadorRotulo);
+			geraCodigo(nome_comando_1, "NADA");
 		}
 		expressao
 		{
 			identificadorRotulo = geraRotulos(rotulos);
-			sprintf(nome_comando, "%s %s%d", "DSVF", "R0", identificadorRotulo);
-			geraCodigo(NULL, nome_comando);
+			sprintf(nome_comando_1, "%s %s%d", "DSVF", "R0", identificadorRotulo);
+			geraCodigo(NULL, nome_comando_1);
 		}
 		 T_DO comand_s_rot
 		{
 			int rotulo_1 = desempilhaRotulo(rotulos);
 			int rotulo_2 = desempilhaRotulo(rotulos);
-			sprintf(nome_comando, "%s %s%d", "DSVS", "R0", rotulo_2);
-			geraCodigo(NULL, nome_comando);
-			sprintf(nome_comando, "%s%d", "R0", rotulo_1);
-			geraCodigo(nome_comando, "NADA");
+			sprintf(nome_comando_1, "%s %s%d", "DSVS", "R0", rotulo_2);
+			geraCodigo(NULL, nome_comando_1);
+			sprintf(nome_comando_1, "%s%d", "R0", rotulo_1);
+			geraCodigo(nome_comando_1, "NADA");
 		}
 ;
 
 condicional:	if_then else
 		{
 			int rotulo_1 = desempilhaRotulo(rotulos);
-			sprintf(nome_comando, "%s%d", "R0", rotulo_1);
-			geraCodigo(nome_comando, "NADA");
+			sprintf(nome_comando_1, "%s%d", "R0", rotulo_1);
+			geraCodigo(nome_comando_1, "NADA");
 		}
 ;
 
 if_then:	T_IF expressao
 		{
 			identificadorRotulo = geraRotulos(rotulos);
-			sprintf(nome_comando, "%s %s%d", "DSVF", "R0", identificadorRotulo);
-			geraCodigo(NULL, nome_comando);
+			sprintf(nome_comando_1, "%s %s%d", "DSVF", "R0", identificadorRotulo);
+			geraCodigo(NULL, nome_comando_1);
 		}
 		T_THEN sub_bloco
 ;
@@ -362,13 +359,13 @@ else:		T_ELSE
 		{
 			puts("AAAAAAAAAAAAAAA");
 			identificadorRotulo = geraRotulos(rotulos);
-			sprintf(nome_comando, "%s %s%d", "DSVS", "R0", identificadorRotulo);
-			geraCodigo(NULL, nome_comando);
+			sprintf(nome_comando_1, "%s %s%d", "DSVS", "R0", identificadorRotulo);
+			geraCodigo(NULL, nome_comando_1);
 			int rotulo_1 = desempilhaRotulo(rotulos);
 			int rotulo_2 = desempilhaRotulo(rotulos);
 			empilhaRotulo(rotulos, rotulo_1);
-			sprintf(nome_comando, "%s%d", "R0", rotulo_2);
-			geraCodigo(nome_comando, "NADA");
+			sprintf(nome_comando_1, "%s%d", "R0", rotulo_2);
+			geraCodigo(nome_comando_1, "NADA");
 
 		}
 		sub_bloco
@@ -400,14 +397,14 @@ declara_ass:	IDENT
 
 			insereNodoProcedimentoTabelaSimbolos(tabelaSimbolos, token, nivel, identificadorRotulo);
 
-			sprintf(nome_comando, "%s %s%d", "DSVS", "R0", inicioRotulos);
-			geraCodigo(NULL, nome_comando);
+			sprintf(nome_comando_1, "%s %s%d", "DSVS", "R0", inicioRotulos);
+			geraCodigo(NULL, nome_comando_1);
 
-			sprintf(nome_comando, "%s%d", "R0", identificadorRotulo);
-			geraCodigo(nome_comando, "NADA");
+			sprintf(nome_comando_1, "%s%d", "R0", identificadorRotulo);
+			geraCodigo(nome_comando_1, "NADA");
 
-			sprintf(nome_comando, "%s %d", "ENPR", nivel);
-    			geraCodigo(NULL, nome_comando);
+			sprintf(nome_comando_1, "%s %d", "ENPR", nivel);
+    			geraCodigo(NULL, nome_comando_1);
 
     			sprintf(procedimento_atual, "%s", token);
 		}
@@ -416,8 +413,8 @@ declara_ass:	IDENT
 
 fim_proced:	{
 			nodo = buscaNodoTabelaSimbolos(tabelaSimbolos, procedimento_atual);
-			sprintf(nome_comando, "RTPR R%d, %d", nivel, nodo->numeroParametros);
-			geraCodigo(NULL, nome_comando);
+			sprintf(nome_comando_1, "RTPR R%d, %d", nivel, nodo->numeroParametros);
+			geraCodigo(NULL, nome_comando_1);
 			nivel--;
 			deslocamento = desempilhaDescolamento(deslocamentos);
 		}
@@ -452,7 +449,7 @@ argumentos: 	argumentos VIRGULA argumento
 
 argumento:	IDENT
 		{
-                	insereNodoPFTabelaSimbolos(tabelaSimbolos, token, nivel);
+                	insereNodoParametroFormalTabelaSimbolos(tabelaSimbolos, token, nivel);
                 	variaveis_inicializacao++;
 		}
 ;
@@ -470,17 +467,17 @@ tipo_param:	VAR
 chama_proced:	assinatura PONTO_E_VIRGULA
 		| PONTO_E_VIRGULA
 		{
-			nodo = buscaNodoTabelaSimbolos(tabelaSimbolos, ident_aux);
-			sprintf(nome_comando, "CHPR R%d, %d", nodo->rotulo, nivel);
-			geraCodigo(NULL, nome_comando);
+			nodo = buscaNodoTabelaSimbolos(tabelaSimbolos, string_auxiliar);
+			sprintf(nome_comando_1, "CHPR R%d, %d", nodo->rotulo, nivel);
+			geraCodigo(NULL, nome_comando_1);
 		}
 ;
 
 assinatura:	ABRE_PARENTESES chama_params FECHA_PARENTESES
 		{
-			nodo = buscaNodoTabelaSimbolos(tabelaSimbolos, ident_aux);
-			sprintf(nome_comando, "CHPR R%d, %d", nodo->rotulo, nivel);
-			geraCodigo(NULL, nome_comando);
+			nodo = buscaNodoTabelaSimbolos(tabelaSimbolos, string_auxiliar);
+			sprintf(nome_comando_1, "CHPR R%d, %d", nodo->rotulo, nivel);
+			geraCodigo(NULL, nome_comando_1);
 		}
 ;
 
@@ -525,8 +522,15 @@ int main (int argc, char** argv) {
    nivel_destino = 0;
    deslocamento_destino = 0;
 
+/* Bison -------------------------------------------------------------*/
    yyin=fp;
    yyparse();
 
+/* Libera as pilhas e tabela -----------------------------------------*/
+   free(rotulos);
+   free(deslocamentos);
+   free(tabelaSimbolos);
+
+/* Retorna sucesso ---------------------------------------------------*/
    return 0;
 }
