@@ -14,5 +14,7 @@ typedef struct Pilha {
 Pilha *inicializaPilha();
 void empilha(Pilha *pilha, void *novoElemento);
 void *desempilha(Pilha *s);
+void *buscaPilha(Pilha *pilha, int equal_func(void *, void *), void *elemento);
+void imprimePilha(Pilha *pilha, void imprimeElemento(void*));
 
 #endif

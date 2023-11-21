@@ -24,10 +24,31 @@ void empilha(Pilha *pilha, void *elemento) {
 
 void *desempilha(Pilha *pilha) {
 
-    if (pilha->tamanhoAtual <= 0) {
-        printf("Erro ao desempilhar -----------------------------\n");
-    }
-
     pilha->tamanhoAtual--;
     return pilha->elementos[pilha->tamanhoAtual];
+}
+
+void *buscaPilha(Pilha *pilha, int equal_func(void *, void *), void *elemento) {
+
+    for (int i = pilha->tamanhoAtual-1; i >= 0; i--) {
+        if (equal_func(pilha->elementos[i], elemento)) {
+            return pilha->elementos[i];
+        }
+    }
+
+    return NULL;
+}
+
+void imprimePilha(Pilha *pilha, void imprimeElemento(void*)) {
+    if (pilha->tamanhoAtual ==0)
+    {
+        printf("PILHA VAZIA");
+    }
+
+    for (int i=0; i<pilha->tamanhoAtual; i++) {
+        imprimeElemento(pilha->elementos[i]);
+    }
+
+    printf("\n");
+
 }

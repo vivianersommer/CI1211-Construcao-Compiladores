@@ -9,7 +9,7 @@
 #include "estruturas/deslocamentos.h"
 
 
-TabelaSimbolos tabelaSimbolos;
+TabelaSimbolos* tabelaSimbolos;
 NodoSimbolo* nodo;
 PilhaRotulos* rotulos;
 PilhaDeslocamentos* deslocamentos;
@@ -20,6 +20,9 @@ int inicioRotulos;
 int identificadorRotulo;
 char nome_comando[1000], nome_comando_2[1000];
 char conteudo_comando[1000], ident_aux[1000];
+char procedimento_atual[1000];
+TipoParametro modo_parametro;
+
 
 %}
 
@@ -35,6 +38,10 @@ char conteudo_comando[1000], ident_aux[1000];
 %token MENOR_OU_IGUAL MAIOR_OU_IGUAL DIFERENTE IGUAL
 %token T_DIVISAO_real ABRE_COLCHETES FECHA_COLCHETES
 
+
+%nonassoc LOWER_THAN_ELSE
+%nonassoc ELSE
+
 %%
 
 programa:	{
@@ -49,22 +56,38 @@ programa:	{
 tipo_inicio:	IDENT
     	        | IDENT ABRE_PARENTESES lista_idents FECHA_PARENTESES
 
-bloco:		part_decl_vars
+bloco:		{
+			deslocamento = 0;
+		}
+		part_decl_vars
+		subrot_opt
 		{
-			inicioRotulos = geraRotulos(rotulos);
-			sprintf(nome_comando, "%s %s%d", "DSVS", "R0", inicioRotulos);
-			geraCodigo(NULL, nome_comando);
-			sprintf(nome_comando, "R%02d", inicioRotulos);
-		  	geraCodigo(nome_comando, "NADA");
+			if (nivel == 0){
+				inicioRotulos = geraRotulos(rotulos);
+				sprintf(nome_comando, "%s %s%d", "DSVS", "R0", inicioRotulos);
+				geraCodigo(NULL, nome_comando);
+				sprintf(nome_comando, "R%02d", inicioRotulos);
+				geraCodigo(nome_comando, "NADA");
+		  	}
 		}
         	comand_compos
         	{
-			for (int i = 0; i < deslocamento; i++){
-				removeNodoTabelaSimbolos(&tabelaSimbolos, i);
-			}
+			removeNodoTabelaSimbolos(tabelaSimbolos, deslocamento);
 			sprintf(nome_comando, "%s %d", "DMEM", deslocamento);
 			geraCodigo(NULL, nome_comando);
        		}
+;
+
+subrot_opt:	subrotinas
+		|
+;
+
+subrotinas: 	subrotinas subrotina
+		| subrotina
+;
+
+subrotina: 	procedimento
+         	| funcao
 ;
 
 part_decl_vars:	var
@@ -86,7 +109,7 @@ declara_var :	{
                	}
             	lista_id_var DOIS_PONTOS tipo
              	{
-	       		adicionaTipoVariavel(&tabelaSimbolos, variaveis_inicializacao, INTEIRO);
+	       		insereTipoVariavelTabelaSimbolos(tabelaSimbolos, variaveis_inicializacao, INTEIRO);
     			sprintf(nome_comando, "%s %d", "AMEM", variaveis_inicializacao);
 			geraCodigo(NULL, nome_comando);
 
@@ -100,15 +123,15 @@ tipo:	      	IDENT
 lista_id_var:	lista_id_var VIRGULA IDENT
                	{ 
                 	variaveis_inicializacao++;
-                	nodo = criaNodo(token, nivel, deslocamento);
-                	insereNodoTabelaSimbolos(&tabelaSimbolos, nodo);
+                	insereNodoVariavelTabelaSimbolos(tabelaSimbolos, token, nivel, deslocamento);
+                	imprimeTabela(tabelaSimbolos);
                 	deslocamento++;
                	}
                	| IDENT               
                	{ 
                 	variaveis_inicializacao++;
-                	nodo = criaNodo(token, nivel, deslocamento);
-                	insereNodoTabelaSimbolos(&tabelaSimbolos, nodo);
+                	insereNodoVariavelTabelaSimbolos(tabelaSimbolos, token, nivel, deslocamento);
+                	imprimeTabela(tabelaSimbolos);
                 	deslocamento++;
               	}
 ;	
@@ -146,18 +169,18 @@ comand_ident:	IDENT
            	atri_proced
 ;
 
-atri_proced: 	atribuicao
+atri_proced: 	atribuicao | chama_proced
 ;
 
 atribuicao:	ATRIBUICAO expressao PONTO_E_VIRGULA
 		{
-			nodo = buscaNodoTabelaSimbolos(&tabelaSimbolos, ident_aux);
+			nodo = buscaNodoTabelaSimbolos(tabelaSimbolos, ident_aux);
 			sprintf(nome_comando, "%s %d, %d", "ARMZ", nodo->nivel, nodo->deslocamento);
 			geraCodigo(NULL, nome_comando);
 		}
 		| ATRIBUICAO expressao
 		{
-			nodo = buscaNodoTabelaSimbolos(&tabelaSimbolos, ident_aux);
+			nodo = buscaNodoTabelaSimbolos(tabelaSimbolos, ident_aux);
 			sprintf(nome_comando, "%s %d, %d", "ARMZ", nodo->nivel, nodo->deslocamento);
 			geraCodigo(NULL, nome_comando);
 		}
@@ -166,7 +189,7 @@ atribuicao:	ATRIBUICAO expressao PONTO_E_VIRGULA
 leitura: 	leitura VIRGULA IDENT
             	{
 		       geraCodigo(NULL, "LEIT");
-		       nodo = buscaNodoTabelaSimbolos(&tabelaSimbolos, token);
+		       nodo = buscaNodoTabelaSimbolos(tabelaSimbolos, token);
 		       strcpy(nome_comando, "ARMZ \0");
 		       sprintf(conteudo_comando, "%d, %d", nivel_destino, deslocamento_destino);
 		       strcat(nome_comando, conteudo_comando);
@@ -175,7 +198,7 @@ leitura: 	leitura VIRGULA IDENT
             	| IDENT
             	{
 		       geraCodigo(NULL, "LEIT");
-		       nodo = buscaNodoTabelaSimbolos(&tabelaSimbolos, token);
+		       nodo = buscaNodoTabelaSimbolos(tabelaSimbolos, token);
 		       strcpy(nome_comando, "ARMZ \0");
 		       sprintf(conteudo_comando, "%d, %d", nivel_destino, deslocamento_destino);
 		       strcat(nome_comando, conteudo_comando);
@@ -281,8 +304,14 @@ var_func:	IDENT
 		funcao_lista
 ;
 
-funcao_lista:	{
-			nodo = buscaNodoTabelaSimbolos(&tabelaSimbolos, token);
+funcao_lista:
+		{
+			geraCodigo(NULL, "AMEM 1");
+		}
+		assinatura
+		|
+		{
+			nodo = buscaNodoTabelaSimbolos(tabelaSimbolos, nome_comando);
 			sprintf(nome_comando, "%s %d, %d", "CRVL", nodo->nivel, nodo->deslocamento);
         		geraCodigo(NULL, nome_comando);
 		}
@@ -345,8 +374,114 @@ else:		T_ELSE
 ;
 
 sub_bloco:	comand_s_rot
-		| comand_compos
 ;
+
+procedimento:	T_PROCEDURE declara_ass PONTO_E_VIRGULA
+		bloco
+		fim_proced
+;
+
+funcao:		T_FUNCTION declara_ass DOIS_PONTOS tipo
+		{
+			insereNodoFuncaoTabelaSimbolos(tabelaSimbolos, procedimento_atual, INTEIRO);
+		}
+		PONTO_E_VIRGULA
+		bloco
+		fim_proced
+;
+
+declara_ass:	IDENT
+		{
+			identificadorRotulo = geraRotulos(rotulos);
+			nivel++;
+			empilhaDescolamento(deslocamentos, deslocamento);
+
+			insereNodoProcedimentoTabelaSimbolos(tabelaSimbolos, token, nivel, identificadorRotulo);
+
+			sprintf(nome_comando, "%s %s%d", "DSVS", "R0", inicioRotulos);
+			geraCodigo(NULL, nome_comando);
+
+			sprintf(nome_comando, "%s%d", "R0", identificadorRotulo);
+			geraCodigo(nome_comando, "NADA");
+
+			sprintf(nome_comando, "%s %d", "ENPR", nivel);
+    			geraCodigo(NULL, nome_comando);
+
+    			sprintf(procedimento_atual, "%s", token);
+		}
+		lista_param
+;
+
+fim_proced:	{
+			nodo = buscaNodoTabelaSimbolos(tabelaSimbolos, procedimento_atual);
+			sprintf(nome_comando, "RTPR R%d, %d", nivel, nodo->numeroParametros);
+			geraCodigo(NULL, nome_comando);
+			nivel--;
+			deslocamento = desempilhaDescolamento(deslocamentos);
+		}
+;
+
+lista_param:	ABRE_PARENTESES parametros FECHA_PARENTESES
+		{
+			atualizaDeslocamentoParametros(tabelaSimbolos, procedimento_atual);
+		}
+		|
+;
+
+parametros:	parametros PONTO_E_VIRGULA conj_params
+		| conj_params
+		|
+;
+
+conj_params: 	tipo_param
+		{
+			variaveis_inicializacao = 0;
+		}
+		argumentos DOIS_PONTOS tipo
+		{
+			insereTipoVariavelTabelaSimbolos(tabelaSimbolos, variaveis_inicializacao, INTEIRO);
+			adicionaParametrosNodoProcedimento(tabelaSimbolos, procedimento_atual, modo_parametro, INTEIRO, variaveis_inicializacao);
+		}
+;
+
+argumentos: 	argumentos VIRGULA argumento
+		| argumento
+;
+
+argumento:	IDENT
+		{
+                	insereNodoPFTabelaSimbolos(tabelaSimbolos, token, nivel);
+                	variaveis_inicializacao++;
+		}
+;
+
+tipo_param:	VAR
+		{
+			modo_parametro = REFERENCIA;
+		}
+		|
+		{
+			modo_parametro = VALOR;
+		}
+;
+
+chama_proced:	assinatura PONTO_E_VIRGULA
+;
+
+assinatura:	ABRE_PARENTESES chama_params FECHA_PARENTESES
+		{
+			nodo = buscaNodoTabelaSimbolos(tabelaSimbolos, ident_aux);
+			sprintf(nome_comando, "CHPR R%d, %d", nodo->rotulo, nivel);
+			geraCodigo(NULL, nome_comando);
+		}
+;
+
+chama_params: 	chama_params VIRGULA expressao
+           	| expressao
+;
+
+
+
 
 %%
 
@@ -367,7 +502,7 @@ int main (int argc, char** argv) {
 
 
 /* Inicia a Tabela de Simbolos -------------------------------------- */
-   inicializaTabelaSimbolos(&tabelaSimbolos);
+   tabelaSimbolos = inicializaTabelaSimbolos();
 
 /* Inicia a Pilha de Rótulos ---------------------------------------- */
    rotulos = inicializaPilhaRotulos();
