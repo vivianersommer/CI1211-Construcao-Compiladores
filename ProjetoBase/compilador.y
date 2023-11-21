@@ -46,6 +46,7 @@ TipoParametro modo_parametro;
 
 programa:	{
 			geraCodigo (NULL, "INPP");
+			inicioRotulos = geraRotulos(rotulos);
 		}
 		PROGRAM tipo_inicio PONTO_E_VIRGULA bloco PONTO
 		{
@@ -63,7 +64,6 @@ bloco:		{
 		subrot_opt
 		{
 			if (nivel == 0){
-				inicioRotulos = geraRotulos(rotulos);
 				sprintf(nome_comando, "%s %s%d", "DSVS", "R0", inicioRotulos);
 				geraCodigo(NULL, nome_comando);
 				sprintf(nome_comando, "R%02d", inicioRotulos);
@@ -169,7 +169,8 @@ comand_ident:	IDENT
            	atri_proced
 ;
 
-atri_proced: 	atribuicao | chama_proced
+atri_proced:    atribuicao
+		| chama_proced
 ;
 
 atribuicao:	ATRIBUICAO expressao PONTO_E_VIRGULA
@@ -351,7 +352,7 @@ condicional:	if_then else
 if_then:	T_IF expressao
 		{
 			identificadorRotulo = geraRotulos(rotulos);
-			sprintf(nome_comando, "%s %s%d", "DSVS", "R0", identificadorRotulo);
+			sprintf(nome_comando, "%s %s%d", "DSVF", "R0", identificadorRotulo);
 			geraCodigo(NULL, nome_comando);
 		}
 		T_THEN sub_bloco
@@ -359,8 +360,9 @@ if_then:	T_IF expressao
 
 else:		T_ELSE
 		{
+			puts("AAAAAAAAAAAAAAA");
 			identificadorRotulo = geraRotulos(rotulos);
-			sprintf(nome_comando, "%s %s%d", "DSVF", "R0", identificadorRotulo);
+			sprintf(nome_comando, "%s %s%d", "DSVS", "R0", identificadorRotulo);
 			geraCodigo(NULL, nome_comando);
 			int rotulo_1 = desempilhaRotulo(rotulos);
 			int rotulo_2 = desempilhaRotulo(rotulos);
@@ -466,6 +468,12 @@ tipo_param:	VAR
 ;
 
 chama_proced:	assinatura PONTO_E_VIRGULA
+		| PONTO_E_VIRGULA
+		{
+			nodo = buscaNodoTabelaSimbolos(tabelaSimbolos, ident_aux);
+			sprintf(nome_comando, "CHPR R%d, %d", nodo->rotulo, nivel);
+			geraCodigo(NULL, nome_comando);
+		}
 ;
 
 assinatura:	ABRE_PARENTESES chama_params FECHA_PARENTESES
